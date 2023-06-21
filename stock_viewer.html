@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Top 10 Nifty Stocks</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Top 10 Nifty Stocks</h1>
+  <table id="stockTable">
+    <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Company</th>
+        <th>Price</th>
+        <th>Change</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiKey = 'PPP32UEAJTOA2';
+
+    function updateStockData(stockData) {
+      const stockTable = document.getElementById('stockTable').getElementsByTagName('tbody')[0];
+
+      stockData.forEach(stock => {
+        const symbol = stock['symbol'];
+        const companyName = stock['name'];
+        const price = stock['price'];
+        const change = stock['change'];
+
+        const row = document.createElement('tr');
+        const symbolCell = document.createElement('td');
+        const nameCell = document.createElement('td');
+        const priceCell = document.createElement('td');
+        const changeCell = document.createElement('td');
+
+        symbolCell.textContent = symbol;
+        nameCell.textContent = companyName;
+        priceCell.textContent = price;
+        changeCell.textContent = change;
+
+        row.appendChild(symbolCell);
+        row.appendChild(nameCell);
+        row.appendChild(priceCell);
+        row.appendChild(changeCell);
+
+        stockTable.appendChild(row);
+      });
+    }
+
+    // Fetch top 10 Nifty stocks
+    fetch(`https://www.alphavantage.co/query?function=SECTOR&apikey=${apiKey}`)
+      .then(response => response.json())
+      .then(data => {
+        const top10Stocks = Object.entries(data['Rank A: Real-Time Performance'])
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 10)
+          .map(([symbol]) => symbol);
+
+        const stockDataPromises = top10Stocks.map(symbol =>
+          fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`)
+            .then(response => response.json())
+            .then(stockData => {
+              const globalQuote = stockData['Global Quote'];
+              const symbol = globalQuote['01. symbol'];
+              const companyName = globalQuote['02. open'];
+              const price = globalQuote['05. price'];
+              const change = globalQuote['09. change'];
+
+              return { symbol, name: companyName, price, change };
+            })
+        );
+
+        Promise.all(stockDataPromises)
+          .then(stockData => {
+            updateStockData(stockData);
+          });
+      });
+  </script>
+</body>
+</html>

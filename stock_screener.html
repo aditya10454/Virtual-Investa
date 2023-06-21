@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Top 10 Nifty 50 Stocks</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+    }
+
+    h1 {
+      color: #333333;
+      text-align: center;
+    }
+
+    table {
+      width: 400px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Top 10 Nifty 50 Stocks</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Stock</th>
+        <th>Company</th>
+      </tr>
+    </thead>
+    <tbody id="stockList">
+      <!-- Stocks will be dynamically added here -->
+    </tbody>
+  </table>
+
+  <script>
+    // Function to fetch top stock data from an API
+    async function fetchTopStocks() {
+      try {
+        const response = await fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&outputsize=full&apikey=demo'); // Replace with the actual API URL
+        const data = await response.json();
+
+        if (response.ok) {
+          displayTopStocks(data);
+        } else {
+          throw new Error(data.message || 'Failed to fetch top stocks');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Function to display the top stocks
+    function displayTopStocks(stockData) {
+      var stockList = document.getElementById("stockList");
+
+      for (var i = 0; i < stockData.length; i++) {
+        var row = document.createElement("tr");
+
+        var stockCell = document.createElement("td");
+        stockCell.textContent = stockData[i].stock;
+        row.appendChild(stockCell);
+
+        var companyCell = document.createElement("td");
+        companyCell.textContent = stockData[i].company;
+        row.appendChild(companyCell);
+
+        stockList.appendChild(row);
+      }
+    }
+
+    // Call the function to fetch top stocks
+    fetchTopStocks();
+  </script>
+</body>
+</html>
